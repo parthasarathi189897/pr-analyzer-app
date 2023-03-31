@@ -15,31 +15,31 @@ module.exports = (app) => {
  
    app.on("pull_request.opened", async (context) => {
      const { github, payload } = context;
-    //  const repo = context.repo();
-    //  const pullNumber = context.payload.number;
+     const repo = context.repo();
+     const pullNumber = context.payload.number;
     app.log.info("github>>>>>>>>>>>>>>>>>>>>");
     app.log.info(github);
     app.log.info("github>>>>>>>>>>>>>>>>>>>>");
-    //  // Get information about the pull request
-    //  const pullRequest = await (context.github).pullRequests.get({
-    //    owner: repo.owner,
-    //    repo: repo.repo,
-    //    pull_number: pullNumber
-    //  });
+     // Get information about the pull request
+     const pullRequest = await (context.github).pullRequests.get({
+       owner: repo.owner,
+       repo: repo.repo,
+       pull_number: pullNumber
+     });
  
-    //  // Get the SHA of the base and head commits
-    //  const baseSha = pullRequest.data.base.sha;
-    //  const headSha = pullRequest.data.head.sha;
+     // Get the SHA of the base and head commits
+     const baseSha = pullRequest.data.base.sha;
+     const headSha = pullRequest.data.head.sha;
  
-    //  // Get the diff between the base and head commits
-    //  const diff = await context.github.repos.compareCommits({
-    //    owner: repo.owner,
-    //    repo: repo.repo,
-    //    base: baseSha,
-    //    head: headSha
-    //  });
+     // Get the diff between the base and head commits
+     const diff = await context.github.repos.compareCommits({
+       owner: repo.owner,
+       repo: repo.repo,
+       base: baseSha,
+       head: headSha
+     });
  
-    //  console.log(diff.data.files);
+     console.log(diff.data.files);
      const issueComment = context.issue({
        body: "Thanks for opening this pull request!",
      });
