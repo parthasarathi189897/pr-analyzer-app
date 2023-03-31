@@ -17,8 +17,9 @@ module.exports = (app) => {
      const { github, payload } = context;
     //  const repo = context.repo();
     //  const pullNumber = context.payload.number;
-     app.log.info(github);
-     app.log.info(payload);
+    app.log.info("github>>>>>>>>>>>>>>>>>>>>");
+    app.log.info(github);
+    app.log.info("github>>>>>>>>>>>>>>>>>>>>");
     //  // Get information about the pull request
     //  const pullRequest = await (context.github).pullRequests.get({
     //    owner: repo.owner,
@@ -45,6 +46,12 @@ module.exports = (app) => {
      return context.octokit.issues.createComment(issueComment);
    });
    app.on("pull_request.closed", async (context) => {
+    const { github, payload } = context;
+    //  const repo = context.repo();
+    //  const pullNumber = context.payload.number;
+    app.log.info("github>>>>>>>>>>>>>>>>>>>>");
+     app.log.info(github);
+     app.log.info("github>>>>>>>>>>>>>>>>>>>>");
     //  app.log.info(context);
     //  const owner = context.payload.repository.owner.login;
     //  const repo = context.payload.repository.name;
