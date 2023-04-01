@@ -14,11 +14,12 @@ module.exports = (app) => {
     return context.octokit.issues.createComment(issueComment);
   });
 
-  app.on("pull_request.opened", async (context) => {
+  app.on(['pull_request.opened', 'pull_request.synchronize'], async (context) => {
     const { payload, octokit } = context;
     const { owner, repo } = context.repo();
     const pullNumber = payload.number;
 
+    // Get the pull request
     const pullRequest = await octokit.pulls.get({
       owner: owner,
       repo: repo,
@@ -31,80 +32,98 @@ module.exports = (app) => {
     const headSha = pullRequestData.head.sha;
 
     // Get the diff between the base and head commits
-    const diff = await context.octokit.rest.repos.compareCommits({
+    const {data: diffData} = await context.octokit.rest.repos.compareCommits({
       owner: owner,
       repo: repo,
       base: baseSha,
       head: headSha,
     });
+    const {files, commits} = diffData;
 
-    //app.log.info(diff.data.files[0].patch);
-    // Send the diff to the ChatGPT API
+    //configuring openai
     const configuration = new Configuration({
       organization: "org-EgEMfXFi82cjEHyUnXCDxS0k",
       apiKey: "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",
     });
     const openai = new OpenAIApi(configuration);
-    const messages = [];
-    messages.push({
+
+    //Declare messages array to store the conversation
+    const conversations = [];
+
+    //Start the conversation
+    conversations.push({
       role: "user",
       content: `Please review the following PR written using javascript, reactJS and provide feedback.`,
     });
-    const completion1 = await openai.createChatCompletion({
+    const conversationStart = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
-      messages: [...messages],
+      messages: conversations,
     });
-    messages.push({
+
+    //update the conversation with the openAI response
+    conversations.push({
       role: "assistant",
-      content: completion1.data.choices[0].message.content,
+      content: conversationStart.data.choices[0].message.content,
     });
-    for (let fileCount = 0; fileCount <  diff.data.files.length; fileCount++) {
-      messages.push({
+
+    //Loop through the files and create a review comment for each file
+    for (let fileCount = 0; fileCount <  files.length; fileCount++) {
+      const {patch, filename} = files[fileCount];
+
+      //create a review comment for each file
+      conversations.push({
         role: "user",
-        content: `The code diff for file number ${fileCount+1}:\n\n${diff.data.files[fileCount].patch}`,
+        content: `Bellow is the code patch, please help me do a brief code review, if any bug risk and improvement suggestion are welcome
+        ${patch}`,
       });
-      const completion = await openai.createChatCompletion({
+      const conversation = await openai.createChatCompletion({
         model: "gpt-3.5-turbo",
-        messages: [...messages],
+        messages: conversations,
       });
-      const completion_text = completion.data.choices[0].message.content;
-      messages.push({
+
+      const botResponse = conversation.data.choices[0].message.content;
+
+      //create a review comment for each file if bot response is not empty
+      if (!!botResponse) {
+        await context.octokit.pulls.createReviewComment({
+          repo,
+          owner,
+          pull_number: context.pullRequest().pull_number,
+          commit_id: commits[commits.length - 1].sha,
+          path: filename,
+          body: botResponse,
+          position: patch.split('\n').length - 1,
+        });
+      }
+  
+      //update the conversation with the openAI response
+      conversations.push({
         role: "assistant",
-        content: completion_text,
+        content: botResponse,
       });
     }
-    const completion = await openai.createChatCompletion({
+
+    const conversationEnd = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: [
-        ...messages,
+        ...conversations,
         {
           role: "user",
-          content: `Thank you for the review. Please share detailed review of all the files.`,
+          content: `Thank you for the review. Please share summary of the review.`,
         }
       ],
     });
-    const completion_text = completion.data.choices[0].message.content;
-    app.log.info(completion_text);
+    const botResponse = conversationEnd.data.choices[0].message.content;
 
-    // const gptResponse = await openai.createChatCompletion({
-    //   engine: 'davinci-codex',
-    //   prompt: `Please review the following code diff and provide feedback:\n\n${diff.data.files}`,
-    //   maxTokens: 1024,
-    //   temperature: 0.5,
-    //   n: 1,
-    //   stop: '\n\n'
-    // });
-
-    // const review = gptResponse.data.choices[0].text.trim();
-    //app.log.info(review);
-
+    //Add the summary to the PR
     const issueComment = context.issue({
       body: `Thanks for opening this pull request!! 
       Here is the review: 
-      ${completion_text}`,
+      ${botResponse}`,
     });
     return octokit.issues.createComment(issueComment);
   });
+
   app.on("pull_request.closed", async (context) => {
     const issueComment = context.issue({
       body: "Thanks for closing this pull request!",
