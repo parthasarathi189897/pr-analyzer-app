@@ -97,13 +97,14 @@ module.exports = (app) => {
           pull_number: context.pullRequest().pull_number,
           path: filename,
         });
-        const isAlreadyReviewed = fileReviews.data.some(
-          (review) => review.user.login === "pr-analyzer-app[bot]"
-        );
+        const isAlreadyReviewed = fileReviews.data.some((review) => {
+          return (
+            review.user.login === "pr-analyzer-app[bot]" && review.body !== ""
+          );
+        });
 
         //create a review comment for each file if bot response is not empty
         if (!!botResponse && !isAlreadyReviewed) {
-          
           await context.octokit.pulls.createReviewComment({
             repo,
             owner,
@@ -137,7 +138,6 @@ module.exports = (app) => {
       //Add the summary to the PR
       const issueComment = context.issue({
         body: `Thanks for opening this pull request!! 
-      Here is the review: 
       ${botResponse}`,
       });
       return octokit.issues.createComment(issueComment);
