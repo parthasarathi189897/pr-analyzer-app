@@ -187,7 +187,7 @@ module.exports = (app) => {
     });
     return context.octokit.issues.createComment(issueComment);
   });
-  app.on("issue_comment.created", async (context) => {
+  app.on("issue_comment", async (context) => {
     //get the comment
     const comment = context.payload.comment.body;
     console.log("comment", comment);
@@ -202,12 +202,14 @@ module.exports = (app) => {
     return context.octokit.issues.createComment(issueComment);
   });
 
-  // app.on(
-  //   ["pull_request.opened", "pull_request.synchronize"],
-  //   async (context) => {
-
-  //   }
-  // );
+  app.on("pull_request.opened",
+    async (context) => {
+      const issueComment = context.issue({
+        body: "Thanks for opening this pull request!",
+      });
+      return context.octokit.issues.createComment(issueComment);
+    }
+  );
 
   app.on("pull_request.closed", async (context) => {
     const issueComment = context.issue({
