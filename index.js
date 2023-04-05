@@ -10,7 +10,7 @@ module.exports = (app) => {
   //configure openAI
   const configuration = new Configuration({
     organization: "org-EgEMfXFi82cjEHyUnXCDxS0k",
-    apiKey: "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",
+    apiKey: process.env.OPENAI_API_KEY,
   });
   const openai = new OpenAIApi(configuration);
 
