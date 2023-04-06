@@ -188,15 +188,19 @@ module.exports = (app) => {
   app.on("issue_comment.created", async (context) => {
     //get the comment
     const comment = context.payload.comment.body;
-    if (comment === "\\review") {
+    if (comment === "/review") {
       addReview(context);
-    } else if (comment === "\\summary") {
+      const issueComment = context.issue({
+        body: "Thanks for the request! I will perform the action soon...",
+      });
+      return context.octokit.issues.createComment(issueComment);
+    } else if (comment === "/summary") {
       addSummary(context);
+      const issueComment = context.issue({
+        body: "Thanks for the request! I will perform the action soon...",
+      });
+      return context.octokit.issues.createComment(issueComment);
     }
-    const issueComment = context.issue({
-      body: "Thanks for the request! I will perform the action soon...",
-    });
-    return context.octokit.issues.createComment(issueComment);
   });
 
   app.on("pull_request.opened",
