@@ -187,10 +187,17 @@ module.exports = (app) => {
     });
     return context.octokit.issues.createComment(issueComment);
   });
+  app.onAny(async (context) => {
+    console.log("event", context.event);
+    console.log("payload", context.payload);
+    app.log.info("event", context.event);
+    app.log.info("payload", context.payload);
+  });
   app.on("issue_comment", async (context) => {
     //get the comment
     const comment = context.payload.comment.body;
     console.log("comment", comment);
+    app.log.info("comment", comment);
     if (comment === "addReview") {
       addReview(context);
     } else if (comment === "addsummary") {
