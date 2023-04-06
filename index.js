@@ -193,6 +193,12 @@ module.exports = (app) => {
     app.log.info("event", context.event);
     app.log.info("payload", context.payload);
   });
+  app.on("issues.opened", async (context) => {
+    const issueComment = context.issue({
+      body: "Thanks for opening this issue!",
+    });
+    return context.octokit.issues.createComment(issueComment);
+  });
   app.on("issue_comment", async (context) => {
     //get the comment
     const comment = context.payload.comment.body;
