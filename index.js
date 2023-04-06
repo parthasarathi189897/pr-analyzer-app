@@ -187,33 +187,21 @@ module.exports = (app) => {
     });
     return context.octokit.issues.createComment(issueComment);
   });
-  app.onAny(async (context) => {
-    console.log("event", context.event);
-    console.log("payload", context.payload);
-    app.log.info("event", context.event);
-    app.log.info("payload", context.payload);
-  });
-  app.on("issues.opened", async (context) => {
-    const issueComment = context.issue({
-      body: "Thanks for opening this issue!",
-    });
-    return context.octokit.issues.createComment(issueComment);
-  });
   app.on("issue_comment.created", async (context) => {
     //get the comment
     app.log.info("issue comment");
     const comment = context.payload.comment.body;
     console.log("comment", comment);
     app.log.info("comment", comment);
-    if (comment === "addReview") {
+    if (comment === "review") {
       addReview(context);
-    } else if (comment === "addsummary") {
+    } else if (comment === "summary") {
       addSummary(context);
     }
-    const issueComment = context.issue({
-      body: "Thanks for commenting on this pull request!",
-    });
-    return context.octokit.issues.createComment(issueComment);
+    // const issueComment = context.issue({
+    //   body: "Thanks for commenting on this pull request!",
+    // });
+    // return context.octokit.issues.createComment(issueComment);
   });
 
   app.on("pull_request.opened",
