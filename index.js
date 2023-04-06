@@ -192,9 +192,9 @@ module.exports = (app) => {
     const comment = context.payload.comment.body;
     console.log("comment", comment);
     //app.log.info("comment", comment);
-    if (comment === "review") {
+    if (comment === "\/review") {
       addReview(context);
-    } else if (comment === "summary") {
+    } else if (comment === "\/summary") {
       console.log("summary");
       addSummary(context);
     }
