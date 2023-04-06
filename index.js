@@ -89,7 +89,7 @@ module.exports = (app) => {
     //Start the conversation
     conversations.push({
       role: "user",
-      content: `Please review the following PR written using javascript, reactJS and provide feedback.`,
+      content: `You are a principal software engineer, working on reactjs and javascript application. Your task is to perform pull request reviews. I will provide you the diffs and perform the review on that diff.`,
     });
     const conversationStart = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
@@ -111,7 +111,7 @@ module.exports = (app) => {
       //create a review comment for each file
       conversations.push({
         role: "user",
-        content: `Below is the code patch, please help me do a brief code review. Please respond only if you find any bug risk or have improvement suggestions 
+        content: `Perform PR review on the following diff:
         ${patch}`,
       });
       const conversation = await openai.createChatCompletion({
