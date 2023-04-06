@@ -95,7 +95,6 @@ module.exports = (app) => {
       model: "gpt-3.5-turbo",
       messages: conversations,
     });
-    console.log(conversationStart.data.choices[0].message.content);
     //update the conversation with the openAI response
     conversations.push({
       role: "assistant",
@@ -188,14 +187,10 @@ module.exports = (app) => {
   });
   app.on("issue_comment.created", async (context) => {
     //get the comment
-    app.log.info("issue comment");
     const comment = context.payload.comment.body;
-    console.log("comment", comment);
-    //app.log.info("comment", comment);
-    if (comment === "\/review") {
+    if (comment === "\\review") {
       addReview(context);
-    } else if (comment === "\/summary") {
-      console.log("summary");
+    } else if (comment === "\\summary") {
       addSummary(context);
     }
     // const issueComment = context.issue({
