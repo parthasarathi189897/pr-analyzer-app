@@ -199,8 +199,9 @@ module.exports = (app) => {
     });
     return context.octokit.issues.createComment(issueComment);
   });
-  app.on("issue_comment", async (context) => {
+  app.on("issue_comment.created", async (context) => {
     //get the comment
+    app.log.info("issue comment");
     const comment = context.payload.comment.body;
     console.log("comment", comment);
     app.log.info("comment", comment);
