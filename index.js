@@ -18,7 +18,7 @@ module.exports = (app) => {
   const getPullRequestDetails = async (context) => {
     const { payload, octokit } = context;
     const { owner, repo } = context.repo();
-    const pullNumber = payload.number;
+    const pullNumber = payload.issue.number;
 
     // Get the pull request
     const pullRequest = await octokit.pulls.get({
@@ -95,7 +95,7 @@ module.exports = (app) => {
       model: "gpt-3.5-turbo",
       messages: conversations,
     });
-
+    console.log(conversationStart.data.choices[0].message.content);
     //update the conversation with the openAI response
     conversations.push({
       role: "assistant",
@@ -136,7 +136,7 @@ module.exports = (app) => {
     const { owner, repo, pullRequest } = await getPullRequestDetails(context);
     //get the diff data
     const diffData = await getPullDiff(context, { owner, repo, pullRequest });
-    const { reviews } = getConversation(diffData);
+    const { reviews } = await getConversation(diffData);
     const { files, commits } = diffData;
     for (let fileCount = 0; fileCount < files.length; fileCount++) {
       const { patch, filename, status } = files[fileCount];
@@ -159,7 +159,7 @@ module.exports = (app) => {
     const { owner, repo, pullRequest } = await getPullRequestDetails(context);
     //get the diff data
     const diffData = await getPullDiff(context, { owner, repo, pullRequest });
-    const { conversations } = getConversation( diffData);
+    const { conversations } = await getConversation( diffData);
     const conversationEnd = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: [
@@ -172,13 +172,12 @@ module.exports = (app) => {
     });
 
     const botResponse = conversationEnd.data.choices[0].message.content;
-
     //Add the summary to the PR
     const issueComment = context.issue({
       body: `Thanks for opening this pull request!! 
     ${botResponse}`,
     });
-    octokit.issues.createComment(issueComment);
+    return context.octokit.issues.createComment(issueComment);
   };
 
   app.on("issues.opened", async (context) => {
@@ -192,10 +191,11 @@ module.exports = (app) => {
     app.log.info("issue comment");
     const comment = context.payload.comment.body;
     console.log("comment", comment);
-    app.log.info("comment", comment);
+    //app.log.info("comment", comment);
     if (comment === "review") {
       addReview(context);
     } else if (comment === "summary") {
+      console.log("summary");
       addSummary(context);
     }
     // const issueComment = context.issue({
