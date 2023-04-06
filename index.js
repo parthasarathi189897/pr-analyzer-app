@@ -193,10 +193,10 @@ module.exports = (app) => {
     } else if (comment === "\\summary") {
       addSummary(context);
     }
-    // const issueComment = context.issue({
-    //   body: "Thanks for commenting on this pull request!",
-    // });
-    // return context.octokit.issues.createComment(issueComment);
+    const issueComment = context.issue({
+      body: "Thanks for the request! I will perform the action soon...",
+    });
+    return context.octokit.issues.createComment(issueComment);
   });
 
   app.on("pull_request.opened",
