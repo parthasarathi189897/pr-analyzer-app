@@ -79,8 +79,10 @@ module.exports = (app) => {
     }
   };
 
-  const getConversation = async (diffData) => {
-    const { files } = diffData;
+  const getConversation = async (context, shouldAddComment = false) => {
+    const { owner, repo, pullRequest } = await getPullRequestDetails(context);
+    //get the diff data
+    const { files, commits } = await getPullDiff(context, { owner, repo, pullRequest });
 
     //Declare messages array to store the conversation
     const conversations = [];
@@ -127,6 +129,16 @@ module.exports = (app) => {
         content: botResponse,
       });
       reviews.push(botResponse);
+      if (shouldAddComment && context) {
+        addReviewComment(context, {
+          owner,
+          repo,
+          filename,
+          review: reviews[fileCount],
+          commits,
+          patch,
+        });
+      }
     }
     return { conversations, reviews };
   };
@@ -135,30 +147,12 @@ module.exports = (app) => {
     const { owner, repo, pullRequest } = await getPullRequestDetails(context);
     //get the diff data
     const diffData = await getPullDiff(context, { owner, repo, pullRequest });
-    const { reviews } = await getConversation(diffData);
-    const { files, commits } = diffData;
-    for (let fileCount = 0; fileCount < files.length; fileCount++) {
-      const { patch, filename, status } = files[fileCount];
 
-      if ((status !== "modified" && status !== "added") || !patch) {
-        continue;
-      }
-      addReviewComment(context, {
-        owner,
-        repo,
-        filename,
-        review: reviews[fileCount],
-        commits,
-        patch,
-      });
-    }
+    await getConversation(context, true);
   };
 
   const addSummary = async (context) => {
-    const { owner, repo, pullRequest } = await getPullRequestDetails(context);
-    //get the diff data
-    const diffData = await getPullDiff(context, { owner, repo, pullRequest });
-    const { conversations } = await getConversation( diffData);
+    const { conversations } = await getConversation(context);
     const conversationEnd = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: [
@@ -207,14 +201,12 @@ module.exports = (app) => {
     }
   });
 
-  app.on("pull_request.opened",
-    async (context) => {
-      const issueComment = context.issue({
-        body: "Thanks for opening this pull request!",
-      });
-      return context.octokit.issues.createComment(issueComment);
-    }
-  );
+  app.on("pull_request.opened", async (context) => {
+    const issueComment = context.issue({
+      body: "Thanks for opening this pull request!",
+    });
+    return context.octokit.issues.createComment(issueComment);
+  });
 
   app.on("pull_request.closed", async (context) => {
     const issueComment = context.issue({
