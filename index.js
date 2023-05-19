@@ -91,7 +91,17 @@ module.exports = (app) => {
     //Start the conversation
     conversations.push({
       role: "user",
-      content: `You are a principal software engineer, working on reactjs and javascript application. Your task is to perform pull request reviews. I will provide you the diffs and perform the review on that diff.`,
+      //content: `You are a principal software engineer, working on reactjs and javascript application. Your task is to perform pull request reviews. I will provide you the diffs and perform the review on that diff.`,
+      content: `Your task is:
+      - Review the code changes and provide feedback.
+      - Do not comment if there are no issues or bugs with this code change.
+      - If there are any bugs, highlight them.
+      - Provide details on missed use of best-practices.
+      - Do not highlight minor issues and nitpicks.
+      - Use bullet points if you have multiple comments.
+      - Provide security recommendations if there are any.
+      
+      You are provided with the code changes (diffs).`
     });
     const conversationStart = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
@@ -113,7 +123,8 @@ module.exports = (app) => {
       //create a review comment for each file
       conversations.push({
         role: "user",
-        content: `Perform PR review on the following diff:
+        //content: `Perform PR review on the following diff:
+        content: `Perform the tasks on following diff:
         ${patch}`,
       });
       const conversation = await openai.createChatCompletion({
@@ -146,7 +157,7 @@ module.exports = (app) => {
   const addReview = async (context) => {
     const { owner, repo, pullRequest } = await getPullRequestDetails(context);
     //get the diff data
-    const diffData = await getPullDiff(context, { owner, repo, pullRequest });
+    await getPullDiff(context, { owner, repo, pullRequest });
 
     await getConversation(context, true);
   };
@@ -159,7 +170,7 @@ module.exports = (app) => {
         ...conversations,
         {
           role: "user",
-          content: `Thank you for the review. Please share summary of the review.`,
+          content: `Please share summary of the review.`,
         },
       ],
     });
