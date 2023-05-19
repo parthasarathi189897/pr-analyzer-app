@@ -9,7 +9,7 @@ module.exports = (app) => {
 
   //configure openAI
   const configuration = new Configuration({
-    organization: "org-EgEMfXFi82cjEHyUnXCDxS0k",
+    organization: "org-kcT653lZu4KmQYUIsYgaHbde",
     apiKey: process.env.OPENAI_API_KEY,
   });
   const openai = new OpenAIApi(configuration);
@@ -104,7 +104,7 @@ module.exports = (app) => {
       You are provided with the code changes (diffs).`
     });
     const conversationStart = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4",
       messages: conversations,
     });
     //update the conversation with the openAI response
@@ -128,7 +128,7 @@ module.exports = (app) => {
         ${patch}`,
       });
       const conversation = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: conversations,
       });
 
@@ -165,7 +165,7 @@ module.exports = (app) => {
   const addSummary = async (context) => {
     const { conversations } = await getConversation(context);
     const conversationEnd = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4",
       messages: [
         ...conversations,
         {
