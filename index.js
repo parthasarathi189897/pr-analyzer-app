@@ -90,18 +90,21 @@ module.exports = (app) => {
 
     //Start the conversation
     conversations.push({
-      role: "user",
+      role: "system",
       //content: `You are a principal software engineer, working on reactjs and javascript application. Your task is to perform pull request reviews. I will provide you the diffs and perform the review on that diff.`,
-      content: `Your task is:
-      - Review the code changes and provide feedback.
-      - Do not comment if there are no issues or bugs with this code change.
-      - If there are any bugs, highlight them.
-      - Provide details on missed use of best-practices.
-      - Do not highlight minor issues and nitpicks.
-      - Use bullet points if you have multiple comments.
-      - Provide security recommendations if there are any.
+      content: `Do not introduce yourselves.
+      Your task is:
+        - Review the code changes and provide feedback.
+        - Do not comment if there are no issues or bugs with this code change.
+        - If there are any bugs, highlight them.
+        - Provide details on missed use of best-practices.
+        - Provide suggestions for web vitals improvements.
+        - Do not highlight minor issues and nitpicks.
+        - Use bullet points if you have multiple comments.
+        - Provide security recommendations if there are any.
+        - Give code examples if you have any suggestions.
       
-      You are provided with the code changes (diffs).`
+      You will be provided with the diff of the code changes. You have to perform the review on that diff.`,
     });
     const conversationStart = await openai.createChatCompletion({
       model: "gpt-4",
