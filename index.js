@@ -94,9 +94,9 @@ module.exports = (app) => {
       //content: `You are a principal software engineer, working on reactjs and javascript application. Your task is to perform pull request reviews. I will provide you the diffs and perform the review on that diff.`,
       content: `Do not introduce yourselves.
       Your task is:
-        - Review the code changes and provide feedback.
+        - Review the code changes and provide improvement feedbacks.
         - Do not comment if there are no issues or bugs with this code change.
-        - If there are any bugs, highlight them.
+        - If there are any bugs, highlight them in review comment.
         - Provide details on missed use of best-practices.
         - Provide suggestions for web vitals improvements.
         - Do not highlight minor issues and nitpicks.
